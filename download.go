@@ -47,6 +47,10 @@ func downloadMd5(uri string) (string, error) {
 	return strings.Fields(c)[0], nil
 }
 
+func DownloadAsString(uri string) (string, error) {
+	return downloadAsString(uri)
+}
+
 func downloadAsString(uri string) (string, error) {
 	resp, err := http.Get(uri)
 	if err != nil {

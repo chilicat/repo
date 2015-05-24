@@ -5,21 +5,43 @@ import (
 	"errors"
 	"strings"
 	"text/template"
+	"fmt"
 )
 
 type Artifact struct {
 	Group, Id, Version, Class, Ext string
 }
 
+type ArtifactInfo struct {
+	artifact Artifact
+	url      string
+	destFile string
+}
+
+func (p Artifact) String() string {
+	return fmt.Sprintf("%s:%s:%s:%s:%s", p.Group, p.Id, p.Version, p.Class, p.Ext)
+}
+
+func (a Artifact) Pom() Artifact {
+	return Artifact { a.Group, a.Id, a.Version, "pom", "pom" }
+}
+
+func (a Artifact) IsPom() bool {
+	return a.Class == "pom" && a.Ext == "pom"
+}
+
 func ParseArtifact(a string) (Artifact, error) {
-	tokens := strings.Split(a, ":")
+	first := strings.Split(a, "@")
+	tokens := strings.Split(first[0], ":")
+	
+	ext := "jar"
+	if len(first) > 1 { ext = first[1] }
+	
 	if len(tokens) == 3 {
-		return Artifact{tokens[0], tokens[1], tokens[2], "", "jar"}, nil
+		return Artifact{tokens[0], tokens[1], tokens[2], "", ext}, nil
 	} else if len(tokens) == 4 {
-		return Artifact{tokens[0], tokens[1], tokens[2], tokens[3], "jar"}, nil
-	} else if len(tokens) == 5 {
-		return Artifact{tokens[0], tokens[1], tokens[2], tokens[3], tokens[4]}, nil
-	}
+		return Artifact{tokens[0], tokens[1], tokens[2], tokens[3], ext}, nil
+	} 
 	return Artifact{}, errors.New("Artifact description is insufficent, minium: <group_id>:<id>:<version>")
 }
 
