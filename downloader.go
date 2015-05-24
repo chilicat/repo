@@ -7,18 +7,18 @@ import (
 type DownloadRequest struct {
 	artifact Artifact
 	inMemory bool
-	consumer chan DownloadResult 
+	consumer chan DownloadResult
 }
 
 type DownloadResult struct {
-	info ArtifactInfo
-	err error
+	info    ArtifactInfo
+	err     error
 	content string
 }
 
 type Downloader struct {
-	num int
-	conf Config
+	num     int
+	conf    Config
 	request chan DownloadRequest
 }
 
@@ -29,9 +29,9 @@ func (d Downloader) Request(r DownloadRequest) {
 func NewDownloader(conf Config) Downloader {
 	num := conf.WorkersCount
 	request := make(chan DownloadRequest, num)
-	d := Downloader { num, conf, request }
-	for i := 0; i<num ; i++ { 
-		go func () {
+	d := Downloader{num, conf, request}
+	for i := 0; i < num; i++ {
+		go func() {
 			for req := range d.request {
 				filename, _ := ToFileName(req.artifact, d.conf.Template)
 				info := ArtifactInfo{
@@ -41,14 +41,14 @@ func NewDownloader(conf Config) Downloader {
 				}
 				var err error = nil
 				var content string = ""
-				if ! d.conf.DryRun {
+				if !d.conf.DryRun {
 					if req.inMemory {
 						content, err = DownloadAsString(info.url)
 					} else {
 						err = Download(info.url, info.destFile)
 					}
 				}
-				result := DownloadResult {
+				result := DownloadResult{
 					info,
 					err,
 					content,

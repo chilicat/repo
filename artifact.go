@@ -3,9 +3,9 @@ package main
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"strings"
 	"text/template"
-	"fmt"
 )
 
 type Artifact struct {
@@ -23,7 +23,7 @@ func (p Artifact) String() string {
 }
 
 func (a Artifact) Pom() Artifact {
-	return Artifact { a.Group, a.Id, a.Version, "pom", "pom" }
+	return Artifact{a.Group, a.Id, a.Version, "pom", "pom"}
 }
 
 func (a Artifact) IsPom() bool {
@@ -33,15 +33,17 @@ func (a Artifact) IsPom() bool {
 func ParseArtifact(a string) (Artifact, error) {
 	first := strings.Split(a, "@")
 	tokens := strings.Split(first[0], ":")
-	
+
 	ext := "jar"
-	if len(first) > 1 { ext = first[1] }
-	
+	if len(first) > 1 {
+		ext = first[1]
+	}
+
 	if len(tokens) == 3 {
 		return Artifact{tokens[0], tokens[1], tokens[2], "", ext}, nil
 	} else if len(tokens) == 4 {
 		return Artifact{tokens[0], tokens[1], tokens[2], tokens[3], ext}, nil
-	} 
+	}
 	return Artifact{}, errors.New("Artifact description is insufficent, minium: <group_id>:<id>:<version>")
 }
 

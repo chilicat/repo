@@ -4,7 +4,7 @@ type Config struct {
 	// Repository base url
 	BaseUrl string
 	// Destination folder.
-	Dest string 
+	Dest string
 	// File name template
 	Template string
 

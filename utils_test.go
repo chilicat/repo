@@ -1,17 +1,17 @@
 package main
+
 import (
-  "testing"
+	"testing"
 )
 
-
 func asset(t *testing.T, exp interface{}, act interface{}, msg string) {
-    if exp != act {
-        t.Errorf(msg + " - expected: %s actual: %s", exp, act)
-    } 
+	if exp != act {
+		t.Errorf(msg+" - expected: %s actual: %s", exp, act)
+	}
 }
 
 func assetError(t *testing.T, err error, msg string) {
-    if err != nil {
-        t.Errorf(msg + " - Error: %s", err)
-    } 
+	if err != nil {
+		t.Errorf(msg+" - Error: %s", err)
+	}
 }

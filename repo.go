@@ -73,16 +73,16 @@ func prepareArtifact(c *cli.Context) []Artifact {
 }
 
 func DownloadCommand(c *cli.Context) {
-	conf := Config {
-        c.String("b"),
-        c.String("d"),
-        c.String("t"),
-        false,
-        5,
-    }
-    tracker := NewTracker(conf)
-    for _, a := range prepareArtifact(c) {
-    	tracker.Request(a)
-    }
+	conf := Config{
+		c.String("b"),
+		c.String("d"),
+		c.String("t"),
+		false,
+		5,
+	}
+	tracker := NewTracker(conf)
+	for _, a := range prepareArtifact(c) {
+		tracker.Request(a)
+	}
 	tracker.Wait()
 }

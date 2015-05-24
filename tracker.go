@@ -7,8 +7,8 @@ import (
 var counter int64 = 0
 
 type Tracker struct {
-	conf Config
-	wait chan error
+	conf    Config
+	wait    chan error
 	request chan Artifact
 }
 
@@ -39,8 +39,7 @@ func NewTracker(conf Config) Tracker {
 	pomResults := make(chan DownloadResult, 100)
 	results := make(chan DownloadResult, 100)
 
-	t := Tracker { conf, wait, requests }
-
+	t := Tracker{conf, wait, requests}
 
 	downloader := NewDownloader(conf)
 
@@ -49,14 +48,14 @@ func NewTracker(conf Config) Tracker {
 			err, pom := ParsePomFromString(res.content)
 			if err != nil {
 				wait <- res.err
-	        }
-	        for _, a := range pom.Dependencies.ToArtifacts("compile") {
-	        	t.Request(a)
-	        }
+			}
+			for _, a := range pom.Dependencies.ToArtifacts("compile") {
+				t.Request(a)
+			}
 
-	        if down() <= 0 {
-	        	wait <- nil
-	        }
+			if down() <= 0 {
+				wait <- nil
+			}
 		}
 	}()
 
@@ -68,17 +67,17 @@ func NewTracker(conf Config) Tracker {
 				if !artifact.IsPom() {
 					up()
 					pomArtifact := artifact.Pom()
-					downloader.Request(DownloadRequest { 
-				        pomArtifact,
-				        true,
-				        pomResults,
-				    })
+					downloader.Request(DownloadRequest{
+						pomArtifact,
+						true,
+						pomResults,
+					})
 				}
-				downloader.Request(DownloadRequest { 
-			        artifact,
-			        false,
-			        results,
-			    })
+				downloader.Request(DownloadRequest{
+					artifact,
+					false,
+					results,
+				})
 			} else {
 				down()
 			}
@@ -90,9 +89,9 @@ func NewTracker(conf Config) Tracker {
 			if res.err != nil {
 				wait <- res.err
 			} else if down() <= 0 {
-	        	wait <- nil	
-		    }
-	    }
+				wait <- nil
+			}
+		}
 	}()
 
 	return t
