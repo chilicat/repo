@@ -11,4 +11,6 @@ type Config struct {
 	DryRun bool
 
 	WorkersCount int
+	
+	Recursive bool
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/codegangsta/cli"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -17,11 +16,6 @@ func main() {
 			Name:      "pull",
 			ShortName: "d",
 			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:  "artifact,a",
-					Usage: "Defines artifact coordinates to download (e.g.: commons-io:commons-io:2.4)",
-					Value: "",
-				},
 				cli.StringFlag{
 					Name:   "destination,d",
 					Usage:  "Defines download destination.",
@@ -44,6 +38,15 @@ func main() {
 					Name:  "verbose,v",
 					Usage: "verbose output.",
 				},
+				cli.BoolFlag{
+					Name:  "recursive,r",
+					Usage: "Recursive download of pom dependencies",
+				},
+				cli.StringFlag{
+					Name:  "extension,e",
+					Usage: "Default extension",
+					Value: "jar",
+				},
 			},
 			Usage:  "Downloads artifact from maven repository.",
 			Action: DownloadCommand,
@@ -53,36 +56,41 @@ func main() {
 }
 
 func prepareArtifact(c *cli.Context) []Artifact {
-	art := c.String("a")
-	if art == "" {
-		fatal("Please define artifact: -a commons-io:commons-io:2.4")
-	}
-	if c.Bool("verbose") {
-		fmt.Println("[INFO] Artifact: " + art)
-		fmt.Println("[INFO] Destination: " + c.String("d"))
-		fmt.Println("[INFO] Template: " + c.String("t"))
-		fmt.Println("[INFO] Base URL: " + c.String("b"))
-	}
+
 	artifacts := make([]Artifact, 0)
-	for _, el := range strings.Split(art, ",") {
-		artifact, err := ParseArtifact(el)
+	
+	for _, el := range c.Args() {
+		artifact, err := ParseArtifact(el, c.String("e"))
 		checkError(err)
 		artifacts = append(artifacts, artifact)
 	}
+
 	return artifacts
 }
 
 func DownloadCommand(c *cli.Context) {
-	conf := Config{
-		c.String("b"),
-		c.String("d"),
-		c.String("t"),
-		false,
-		5,
+
+	if c.Bool("verbose") {
+		fmt.Println("[INFO] Destination: " + c.String("d"))
+		fmt.Println("[INFO] Template: " + c.String("t"))
+		fmt.Println("[INFO] Base URL: " + c.String("b"))
 	}
-	tracker := NewTracker(conf)
-	for _, a := range prepareArtifact(c) {
-		tracker.Request(a)
+
+	if len(c.Args()) > 0 {
+		conf := Config{
+			c.String("b"),
+			c.String("d"),
+			c.String("t"),
+			false,
+			5,
+			c.Bool("r"),
+		}
+		tracker := NewTracker(conf)
+		for _, a := range prepareArtifact(c) {
+			tracker.Request(a)
+		}
+		checkError(tracker.Wait())
+	} else if c.Bool("verbose") {
+		fmt.Println("[INFO] No artifacts defined. Nothing to do." )	
 	}
-	tracker.Wait()
 }

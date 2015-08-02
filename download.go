@@ -77,12 +77,21 @@ func download(uri, dest string) error {
 	if resp.StatusCode != 200 {
 		return errors.New("Download failed (" + uri + "): " + strconv.Itoa(resp.StatusCode))
 	}
-	out, err := os.Create(dest)
+	tmpDest := dest + "__temp"
+	out, err := os.Create(tmpDest)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
 	_, err = io.Copy(out, resp.Body)
+	if err == nil {
+		err = os.Rename(tmpDest, dest)
+		if err != nil {
+			os.Remove(tmpDest)	
+		}
+	} else {
+		os.Remove(tmpDest)
+	}
 	return err
 }
 

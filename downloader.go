@@ -2,6 +2,7 @@ package main
 
 import (
 	"path"
+	"fmt"
 )
 
 type DownloadRequest struct {
@@ -45,9 +46,18 @@ func NewDownloader(conf Config) Downloader {
 					if req.inMemory {
 						content, err = DownloadAsString(info.url)
 					} else {
+						if info.artifact.IsSnapshot() {
+							content, err = DownloadAsString(ToMetadataUrl(d.conf.BaseUrl, req.artifact))
+							err, md := ParseMDFromString(content)
+							if err == nil {
+								info.url = ToSnapshotUrl(d.conf.BaseUrl, req.artifact, md.Snapshot.Timestamp)
+								fmt.Printf("======= %s\n", info.url)
+							} 
+						}
 						err = Download(info.url, info.destFile)
 					}
 				}
+				
 				result := DownloadResult{
 					info,
 					err,

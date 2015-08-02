@@ -30,11 +30,15 @@ func (a Artifact) IsPom() bool {
 	return a.Class == "pom" && a.Ext == "pom"
 }
 
-func ParseArtifact(a string) (Artifact, error) {
+func (a Artifact) IsSnapshot() bool {
+	return strings.HasSuffix(a.Version, "-SNAPSHOT")
+}
+
+func ParseArtifact(a string, defaultExtension string) (Artifact, error) {
 	first := strings.Split(a, "@")
 	tokens := strings.Split(first[0], ":")
 
-	ext := "jar"
+	ext := defaultExtension
 	if len(first) > 1 {
 		ext = first[1]
 	}

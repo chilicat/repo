@@ -45,16 +45,20 @@ func NewTracker(conf Config) Tracker {
 
 	go func() {
 		for res := range pomResults {
-			err, pom := ParsePomFromString(res.content)
-			if err != nil {
+			if res.err != nil {
 				wait <- res.err
-			}
-			for _, a := range pom.Dependencies.ToArtifacts("compile") {
-				t.Request(a)
-			}
+			} else {
+				err, pom := ParsePomFromString(res.content)
+				if err != nil {
+					wait <- res.err
+				}
+				for _, a := range pom.Dependencies.ToArtifacts("compile") {
+					t.Request(a)
+				}
 
-			if down() <= 0 {
-				wait <- nil
+				if down() <= 0 {
+					wait <- nil
+				}
 			}
 		}
 	}()
@@ -64,7 +68,7 @@ func NewTracker(conf Config) Tracker {
 		for artifact := range requests {
 			if !set[artifact.String()] {
 				set[artifact.String()] = true
-				if !artifact.IsPom() {
+				if conf.Recursive && !artifact.IsPom() {
 					up()
 					pomArtifact := artifact.Pom()
 					downloader.Request(DownloadRequest{
